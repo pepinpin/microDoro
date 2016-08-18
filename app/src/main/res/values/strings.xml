@@ -1,0 +1,12 @@
+<resources>
+	<string name="app_name" translatable="false">µDoro</string>
+	<string name="press_start">Press Start</string>
+	<string name="wait_message">Please Wait...</string>
+	<string name="settings_title">Set the time (in mn)</string>
+	<string name="settings_set">Set</string>
+	<string name="settings_cancel">Cancel</string>
+	<string name="notification_text">Time is Up !!</string>
+	<string name="boiled_egg_cooking_time">Boiled egg</string>
+	<string name="soft_boiled_egg_cooking_time">Soft-boiled egg</string>
+	<string name="hard_boiled_egg_cooking_time">Hard-boiled egg</string>
+</resources>
