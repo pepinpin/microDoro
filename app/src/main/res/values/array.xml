@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="pomodoroAmountArray">
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+	</string-array>
+
+	<string-array name="pomodoroAmountValues">
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+	</string-array>
+
+	<string-array name="pomodoroDurationArray">
+		<item>15 mn</item>
+		<item>20 mn</item>
+		<item>25 mn</item>
+		<item>30 mn</item>
+		<item>35 mn</item>
+	</string-array>
+
+	<string-array name="pomodoroDurationValues">
+		<item>15</item>
+		<item>20</item>
+		<item>25</item>
+		<item>30</item>
+		<item>35</item>
+	</string-array>
+
+	<string-array name="shortBreakArray">
+		<item>2 mn</item>
+		<item>5 mn</item>
+		<item>7 mn</item>
+		<item>10 mn</item>
+	</string-array>
+
+	<string-array name="shortBreakValues">
+		<item>2</item>
+		<item>5</item>
+		<item>7</item>
+		<item>10</item>
+	</string-array>
+
+	<string-array name="longBreakArray">
+		<item>15 mn</item>
+		<item>20 mn</item>
+		<item>25 mn</item>
+		<item>30 mn</item>
+	</string-array>
+
+	<string-array name="longBreakValues">
+		<item>15</item>
+		<item>20</item>
+		<item>25</item>
+		<item>30</item>
+	</string-array>
+</resources>

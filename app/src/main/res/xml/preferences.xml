@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory
+		android:title="Pomodoro">
+
+		<ListPreference
+			android:key="pomodoro_amount"
+			android:defaultValue="4"
+			android:title="Pomodoro amount"
+			android:summary="How many Pomodoros before a long break"
+			android:entries="@array/pomodoroAmountArray"
+			android:entryValues="@array/pomodoroAmountValues"
+			/>
+		<ListPreference
+			android:key="pomodoro_duration"
+			android:defaultValue="25"
+			android:title="Pomodoro duration"
+			android:summary="How long is a Pomodoro session"
+			android:entries="@array/pomodoroDurationArray"
+			android:entryValues="@array/pomodoroDurationValues"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:title="Breaks">
+
+		<ListPreference
+			android:key="short_break_duration"
+			android:defaultValue="5"
+			android:title="Short break duration"
+			android:summary="How long is a short break"
+			android:entries="@array/shortBreakArray"
+			android:entryValues="@array/shortBreakValues"
+			/>
+		<ListPreference
+			android:key="long_break_duration"
+			android:defaultValue="20"
+			android:title="Long break duration"
+			android:summary="How long is a long break"
+			android:entries="@array/longBreakArray"
+			android:entryValues="@array/longBreakValues"
+			/>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:title="Notifications">
+
+		<SwitchPreference
+			android:key="notification_ring"
+			android:defaultValue="true"
+			android:title="Ring"
+			/>
+		<SwitchPreference
+			android:key="notification_vibrate"
+			android:defaultValue="true"
+			android:title="Vibrate"
+			/>
+	</PreferenceCategory>
+
+</PreferenceScreen>
