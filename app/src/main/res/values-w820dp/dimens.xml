@@ -2,8 +2,8 @@
 <resources>
 	<dimen name="press_start_text_view_bottom_margin">12dp</dimen>
 
-	<dimen name="time_left_text_size">78sp</dimen>
-	<dimen name="secondary_text_size">52sp</dimen>
+	<dimen name="time_left_text_size">64sp</dimen>
+	<dimen name="secondary_text_size">42sp</dimen>
 
 	<!--Overscan-->
 	<dimen name="overscan_vertical">27dp</dimen>

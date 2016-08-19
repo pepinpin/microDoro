@@ -157,8 +157,11 @@ public class MainActivity extends AppCompatActivity {
 						_thread.interrupt();
 					}
 
-					// clear the main TextView
+					// hide the main TextView
 					TEXT_TIME.get().setVisibility(View.INVISIBLE);
+
+					// hide the second TextView
+					TEXT_SECONDARY.get().setVisibility(View.INVISIBLE);
 
 					// trigger the "finish pouring" animation
 					LIQUID_BUTTON.get().finishPour();
@@ -187,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
 
 				// show the "press start" textView
 				_pressStartTextView.setVisibility(View.VISIBLE);
+
+				TEXT_SECONDARY.get().setVisibility(View.VISIBLE);
 
 				// if the snackBar is visible, dismiss it
 				if (_snackBar != null){
