@@ -6,6 +6,6 @@
 	<dimen name="press_start_text_view_bottom_margin">128dp</dimen>
 
 	<dimen name="time_left_text_size">48sp</dimen>
-	<dimen name="press_start_text_size">32sp</dimen>
+	<dimen name="secondary_text_size">28sp</dimen>
 
 </resources>

@@ -6,7 +6,7 @@
 	android:id="@+id/activity_main"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	tools:context="net.biospherecorp.microchrono.MainActivity">
+	tools:context="net.biospherecorp.microdoro.MainActivity">
 
 	<com.gospelware.liquidbutton.LiquidButton
 		android:id="@+id/liquid_time"
@@ -75,8 +75,8 @@
 
 	<TextView
 		android:id="@+id/text_secondary"
-		android:text="@string/press_start"
-		android:textSize="@dimen/press_start_text_size"
+		android:text="@string/text_get_to_work"
+		android:textSize="@dimen/secondary_text_size"
 
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -86,4 +86,18 @@
 		app:layout_constraintLeft_toLeftOf="@+id/liquid_time"
 		app:layout_constraintBottom_toBottomOf="@+id/liquid_time"
 		/>
+
+	<TextView
+		android:id="@+id/press_start"
+		android:text="@string/press_start"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+
+		android:layout_marginLeft="16dp"
+		android:layout_marginStart="16dp"
+		android:layout_marginBottom="16dp"
+
+		app:layout_constraintBottom_toTopOf="@+id/start_button"
+		app:layout_constraintLeft_toLeftOf="@+id/liquid_time"/>
+
 </android.support.constraint.ConstraintLayout>
