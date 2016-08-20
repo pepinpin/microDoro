@@ -437,14 +437,14 @@ public class MainActivity extends AppCompatActivity {
 	// turn the screen brightness up
 	private void _lightScreenUp(){
 		WindowManager.LayoutParams layout = getWindow().getAttributes();
-		layout.screenBrightness = 0.8f;
+		layout.screenBrightness = -1f;
 		getWindow().setAttributes(layout);
 	}
 
 	// dim the screen brightness down
 	private void _lightScreenDown(){
 		WindowManager.LayoutParams layout = getWindow().getAttributes();
-		layout.screenBrightness = 0.1f;
+		layout.screenBrightness = 0.2f;
 		getWindow().setAttributes(layout);
 	}
 

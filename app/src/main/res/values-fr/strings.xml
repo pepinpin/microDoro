@@ -1,6 +1,4 @@
 <resources>
-	<string name="app_name" translatable="false">µDoro</string>
-
 	<!--SNACK_BAR-->
 	<string name="wait_message">Veuillez patienter...</string>
 
