@@ -1,15 +1,15 @@
 <resources>
 	<!--SNACK_BAR-->
-	<string name="wait_message">Veuillez patienter...</string>
+	<string name="wait_message">Veuillez patienter…</string>
 
 	<!--TEXT_VIEWS-->
 	<string name="text_press_start">Appuyez sur Start</string>
 	<string name="text_get_to_work">Au boulot !</string>
 	<string name="text_time_for_short_break">Il est temps de faire une petite pause</string>
 	<string name="text_time_for_long_break">Il est temps de faire une longue pause</string>
-	<string name="text_pomodoro_in_progress">Pomodoro en cours...</string>
-	<string name="text_short_break_in_progress">Petite pause en cours...</string>
-	<string name="text_long_break_in_progress">Longue pause en cours...</string>
+	<string name="text_pomodoro_in_progress">Pomodoro en cours…</string>
+	<string name="text_short_break_in_progress">Petite pause en cours…</string>
+	<string name="text_long_break_in_progress">Longue pause en cours…</string>
 
 
 	<!--SETTINGS-->

@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
 // Runnable used to notify that the time is up
 	private class NotifyTimeIsUp implements Runnable{
 
-		private String _textToUse;
+		private final String _textToUse;
 
 		NotifyTimeIsUp(String text){
 			_textToUse = text;

@@ -2,7 +2,7 @@
 	<string name="app_name" translatable="false">µDoro</string>
 
 	<!--SNACK_BAR-->
-	<string name="wait_message">Please Wait...</string>
+	<string name="wait_message">Please Wait…</string>
 
 	<!--TEXT_VIEWS-->
 	<string name="text_press_start">Press Start</string>
@@ -11,9 +11,9 @@
 	<string name="text_time_for_short_break">Time for a quick break</string>
 	<string name="text_time_for_long_break">Time for a long break</string>
 
-	<string name="text_pomodoro_in_progress">Pomodoro in progress...</string>
-	<string name="text_short_break_in_progress">Quick break in progress...</string>
-	<string name="text_long_break_in_progress">Long break in progress...</string>
+	<string name="text_pomodoro_in_progress">Pomodoro in progress…</string>
+	<string name="text_short_break_in_progress">Quick break in progress…</string>
+	<string name="text_long_break_in_progress">Long break in progress…</string>
 
 
 	<!--SETTINGS-->
