@@ -1,0 +1,31 @@
+<resources>
+	<string name="app_name" translatable="false">µDoro</string>
+
+	<!--SNACK_BAR-->
+	<string name="wait_message">Veuillez patienter...</string>
+
+	<!--TEXT_VIEWS-->
+	<string name="text_press_start">Appuyez sur Start</string>
+	<string name="text_get_to_work">Au boulot !</string>
+	<string name="text_time_for_short_break">Il est temps de faire une petite pause</string>
+	<string name="text_time_for_long_break">Il est temps de faire une longue pause</string>
+	<string name="text_pomodoro_in_progress">Pomodoro en cours...</string>
+	<string name="text_short_break_in_progress">Petite pause en cours...</string>
+	<string name="text_long_break_in_progress">Longue pause en cours...</string>
+
+
+	<!--SETTINGS-->
+	<string name="pref_category_pomodoro">Pomodoro</string>
+	<string name="pref_pomodoro_amount_title">Nombre de Pomodoro</string>
+	<string name="pref_pomodoro_amount_summary">Combien de Pomodoro avant une longue pause</string>
+	<string name="pref_pomodoro_duration_title">Durée d\'un Pomodoro</string>
+	<string name="pref_pomodoro_duration_summary">Combien de temps dure une session de Pomodoro</string>
+	<string name="pref_category_breaks">Pauses</string>
+	<string name="pref_short_break_duration_title">Durée d\'une petite pause</string>
+	<string name="pref_short_break_duration_summary">Combien de temps dure une petite pause</string>
+	<string name="pref_long_break_duration_title">Durée d\'une longue pause</string>
+	<string name="pref_long_break_duration_summary">Combien de temps dure une longue pause</string>
+	<string name="pref_category_notifications">Notifications</string>
+	<string name="pref_ring_title">Sonnerie</string>
+	<string name="pref_vibrate_title">Vibration</string>
+</resources>

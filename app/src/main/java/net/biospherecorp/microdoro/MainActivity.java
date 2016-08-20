@@ -16,8 +16,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.gospelware.liquidbutton.LiquidButton;
@@ -28,11 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
 	// this fields need to be static to be usable by the handler
 	//
-	// Putting a class needing the Context in a HardReference static
-	// variable will leak the context, hence the use of a WeakReference
 	private static WeakReference<LiquidButton> LIQUID_BUTTON;
 	private static WeakReference<TextView> TEXT_TIME;
-	private static WeakReference<TextView> TEXT_SECONDARY;
 
 	// the notification time
 	private static final int NOTIFICATION_TIME = 2500; // in ms
@@ -40,26 +37,30 @@ public class MainActivity extends AppCompatActivity {
 	// variable to hold the time in minutes
 	private static int TIME_IN_MN;
 
-	// variable to hold the time in seconds
+	// variable to hold the time in _seconds
 	private static float TIME_IN_SEC;
 
 	// is the timer actually running ?
 	private static boolean IS_RUNNING = false;
 
 
-	private TextView _pressStartTextView;
+	// the textViews
+	private TextView _pressStartTextView,
+			_textStartSession, _textInProgress;
 
 	// From Settings
-	private int _pomodoroAmount;
-	private int _pomodoroDuration;
-	private int _shortBreakDuration;
-	private int _longBreakDuration;
-	private boolean _isVibrate;
-	private boolean _isSound;
+	private int _pomodoroAmount, _pomodoroDuration,
+			_shortBreakDuration, _longBreakDuration;
 
-	private int _pomodoroCounter = 1;
-	private boolean _isBreak = true; // is previous state a break ?
+	private boolean _isVibrate, _isSound;
 
+	// the Pomodoro counter
+	private int _pomodoroCounter = 0;
+
+	// the current state
+	//
+	// first run = 100, pomodoro = 0, quick break = -1, long break = -2
+	private int _currentState = 100;
 
 	// has the cancel button been pressed
 	private boolean _isCanceledByUser = false;
@@ -79,26 +80,28 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-
-		// get the default value from the settings
-		getSettingsFromSharedPreferences();
-
-		// get the textView that's says "press start"
-		TEXT_SECONDARY = new WeakReference<>((TextView) findViewById(R.id.text_secondary));
+		// get the textView showing the time
+		TEXT_TIME = new WeakReference<>((TextView) findViewById(R.id.text_time));
 
 		// get the liquidButton
 		LIQUID_BUTTON = new WeakReference<>((LiquidButton) MainActivity.this.findViewById(R.id.liquid_time));
 
-		// get the textView showing the time
-		TEXT_TIME = new WeakReference<>((TextView) findViewById(R.id.text_time));
 
-		// set the time with the default value
-		TEXT_TIME.get().setText(TIME_IN_MN + " mn");
+		// get the default values from the settings
+		_getSettingsFromSharedPreferences();
+
+		// set the time with the value from settings
+		TEXT_TIME.get().setText(_pomodoroDuration + " mn");
+
+		// get the start session textView
+		_textStartSession = (TextView) findViewById(R.id.text_third);
+
+		// get the "in progress..." textView
+		_textInProgress = (TextView) findViewById(R.id.text_secondary);
 
 		// find and set the "press start" textView
 		_pressStartTextView = (TextView) findViewById(R.id.press_start);
-		_pressStartTextView.setText(R.string.press_start);
+		_pressStartTextView.setText(R.string.text_press_start);
 
 		// get the colors
 		_colorPrimary = getResources().getColor(R.color.colorPrimary);
@@ -122,7 +125,8 @@ public class MainActivity extends AppCompatActivity {
 
 				// start the settings activity
 				Intent intent = new Intent(MainActivity.this, MyPreferenceActivity.class);
-				startActivity(intent);
+				intent.putExtra("orientation", getRequestedOrientation());
+				startActivityForResult(intent, 1);
 			}
 		});
 
@@ -132,36 +136,40 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View view) {
 
-				// if the timer AND the liquid animations aren't running
+			// start a new Pomodoro session
 				if (!IS_RUNNING){
 
-					// say that's running
+					// say that is running
 					IS_RUNNING = true;
 
+					// lock screen orientation on 1st run
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+
 					// initialize the TIME_IN_MN,
-					// the Buttons and the TextViews
-					init();
+					// the Buttons, the screen backlighting and the TextViews
+					_init();
 
 					// start the timer's thread
 					_thread = new Thread(new Chrono());
 					_thread.start();
 
+			// cancel the current Pomodoro session
 				}else if (!_isCanceledByUser){
 
 					// only true when this button is pressed
 					// while a timer is in progress
 					_isCanceledByUser = true;
 
-					// if the thread is still alive, stop it
+					// if the thread is still running, stop it
 					if (!_thread.isInterrupted()){
 						_thread.interrupt();
 					}
 
-					// hide the main TextView
-					TEXT_TIME.get().setVisibility(View.INVISIBLE);
+					// turn the screen back light to 80%
+					_lightScreenUp();
 
-					// hide the second TextView
-					TEXT_SECONDARY.get().setVisibility(View.INVISIBLE);
+					// reset the buttons and textViews to original state
+					_hideButtonsAndTextViews();
 
 					// trigger the "finish pouring" animation
 					LIQUID_BUTTON.get().finishPour();
@@ -185,18 +193,18 @@ public class MainActivity extends AppCompatActivity {
 				_startButton.setBackgroundTintList(ColorStateList.valueOf(_colorPrimary));
 				_startButton.setImageResource(android.R.drawable.ic_media_play);
 
-				// re enabled the settings button
-				_settingButton.setEnabled(true);
-
-				// show the "press start" textView
-				_pressStartTextView.setVisibility(View.VISIBLE);
-
-				TEXT_SECONDARY.get().setVisibility(View.VISIBLE);
-
 				// if the snackBar is visible, dismiss it
 				if (_snackBar != null){
 					_snackBar.dismiss();
 				}
+
+				// show the "press start" and the "in progress..." textViews
+				_pressStartTextView.setVisibility(View.VISIBLE);
+				_textStartSession.setVisibility(View.VISIBLE);
+
+				// show the buttons
+				_startButton.setVisibility(View.VISIBLE);
+				_settingButton.setVisibility(View.VISIBLE);
 
 				// it's not running anymore
 				IS_RUNNING = false;
@@ -205,34 +213,54 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onProgressUpdate(float progress) {
 
+				// if progress >= 100%
 				if (progress >= 1f){
 
 					String textToDisplay;
 
-					if (_isBreak){
+					// if current state is a break
+					if (_currentState < 0){
 
+						// set the "get back to work" message
 						textToDisplay = getString(R.string.text_get_to_work);
+
+					// if current state is a pomodoro
 					}else{
+
+						// if it's time for a long break
 						if (_pomodoroCounter == _pomodoroAmount){
 
+							// set the "Time for a long break" message
 							textToDisplay = getString(R.string.text_time_for_long_break);
 						}else{
 
+							// set the "Time for a quick break" message
 							textToDisplay = getString(R.string.text_time_for_short_break);
 						}
 					}
 
-					TEXT_SECONDARY.get().setText(textToDisplay);
+					// set the "start..." message
+					_textStartSession.setText(textToDisplay);
 
+					// hide the "in progress..." textView
+					_textInProgress.setVisibility(View.INVISIBLE);
+
+					// if the timer hasn't been canceled by the user
 					if (!_isCanceledByUser){
 
+						// Notify with sound, vibration and notification
 						Thread notifyThread = new Thread(new NotifyTimeIsUp(textToDisplay));
 						notifyThread.start();
-					}else{
 
-						// reset the variable to false
+					// if the timer has been canceled by the user
+					}else{
+						// do nothing
+						// just reset the variable to false
 						_isCanceledByUser = false;
 					}
+
+					// turn the screen backlight up
+					_lightScreenUp();
 				}
 			}
 		});
@@ -242,60 +270,133 @@ public class MainActivity extends AppCompatActivity {
 	protected void onResume() {
 		super.onPostResume();
 
-		// get the default value from the settings
-		getSettingsFromSharedPreferences();
-
-		TEXT_TIME.get().setText(_pomodoroDuration + " mn");
+		// set the flag to avoid the device to go to sleep mode
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
-	private void init(){
+	@Override
+	protected void onPause() {
+		super.onPause();
 
-		if (_isBreak){
-			_isBreak = false;
+		// clear the flag that avoids the device to go to sleep mode
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+	}
 
+	// return from the preferences activity
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (requestCode == 1){
+
+			// get the default value from the settings
+			_getSettingsFromSharedPreferences();
+
+			// check the current state
+			switch (_currentState){
+				case -1: // is quick break
+					TIME_IN_MN = _shortBreakDuration;
+					break;
+				case -2: // is long break
+					TIME_IN_MN = _longBreakDuration;
+					break;
+				default: // is pomodoro or 1st run
+					TIME_IN_MN = _pomodoroDuration;
+					break;
+			}
+
+			TEXT_TIME.get().setText(TIME_IN_MN+ " mn");
+		}
+	}
+
+	private void _init(){
+
+		// if current state is a break or the app has just been launched
+		if (_currentState < 0 || _currentState == 100){
+
+			// if the app has just been launched
+			if (_currentState == 100){
+				//increment the counter
+				_pomodoroCounter++;
+			}
+
+			// change the state to Pomodoro
+			_currentState = 0;
+
+			// set the variable and set the 2nd text textView
 			TIME_IN_MN = _pomodoroDuration;
-			TEXT_SECONDARY.get().setText(R.string.text_podoro_in_progress);
-		}else{
-			_isBreak = true;
+			_textInProgress.setText(R.string.text_pomodoro_in_progress);
 
+		// if current state is a Pomodoro
+		}else{
+
+			// and if the counter = settings amount
 			if (_pomodoroCounter == _pomodoroAmount){
 
+				// reset the pomodoro counter
 				_pomodoroCounter = 0;
 
+				// change the state to long break
+				_currentState = -2;
+
+				// set the variable and set the 2nd text textView
 				TIME_IN_MN = _longBreakDuration;
-				TEXT_SECONDARY.get().setText(R.string.text_long_break_in_progress);
+				_textInProgress.setText(R.string.text_long_break_in_progress);
+
+			// if the counter != settings amount
 			}else{
 
+				// increment the pomodoro counter
 				_pomodoroCounter++;
 
+				// change the state to a quick break
+				_currentState = -1;
+
+				// set the variable and set the 2nd text textView
 				TIME_IN_MN = _shortBreakDuration;
-				TEXT_SECONDARY.get().setText(R.string.text_short_break_in_progress);
+				_textInProgress.setText(R.string.text_short_break_in_progress);
 			}
 		}
 
-		// hide the "press start" textView
+		// store the conversion of minute to _seconds
+		TIME_IN_SEC = TIME_IN_MN * 60f;
+
+		// init textViews
+		_initTextViews();
+
+		// init the buttons
+		_initButtons();
+
+		// dim the screen backlight down
+		_lightScreenDown();
+	}
+
+	private void _initTextViews(){
+
+		// hide the "press start" and the third text textViews
 		_pressStartTextView.setVisibility(View.INVISIBLE);
 
 		// show the main TextView
 		TEXT_TIME.get().setVisibility(View.VISIBLE);
+
+		// show the second text
+		_textInProgress.setVisibility(View.VISIBLE);
+
 		// set the main textView
 		TEXT_TIME.get().setText(TIME_IN_MN + " mn");
 
-		// store the conversion of minute to seconds
-		TIME_IN_SEC = TIME_IN_MN * 60f;
-
-
-		initButtons();
+		// hide the 3rd text
+		_textStartSession.setVisibility(View.INVISIBLE);
 	}
 
-	private void initButtons(){
+	private void _initButtons(){
 
 		// change the image and the background color of the _startButton
 		_startButton.setBackgroundTintList(ColorStateList.valueOf(_colorSecondary));
 		_startButton.setImageResource(android.R.drawable.ic_delete);
 
-		// disable the setting button
-		_settingButton.setEnabled(false);
+		// hide the settings button
+		_settingButton.setVisibility(View.INVISIBLE);
 
 		// setup the liquid button
 		//
@@ -305,10 +406,25 @@ public class MainActivity extends AppCompatActivity {
 		LIQUID_BUTTON.get().startPour();
 	}
 
-	private void getSettingsFromSharedPreferences(){
+	private void _hideButtonsAndTextViews() {
 
+		// hide the main TextView
+		TEXT_TIME.get().setVisibility(View.INVISIBLE);
+
+		// hide the "in progress..." TextView
+		_textInProgress.setVisibility(View.INVISIBLE);
+
+		// hide the buttons
+		_startButton.setVisibility(View.INVISIBLE);
+		_settingButton.setVisibility(View.INVISIBLE);
+	}
+
+	private void _getSettingsFromSharedPreferences(){
+
+		// get the shared preferences
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
+		// get the values and set the variables
 		_pomodoroAmount = Integer.valueOf(sharedPreferences.getString("pomodoro_amount", "4"));
 		_pomodoroDuration = Integer.valueOf(sharedPreferences.getString("pomodoro_duration", "25"));
 		_shortBreakDuration = Integer.valueOf(sharedPreferences.getString("short_break_duration", "5"));
@@ -316,22 +432,21 @@ public class MainActivity extends AppCompatActivity {
 
 		_isVibrate = sharedPreferences.getBoolean("notification_vibrate", true);
 		_isSound = sharedPreferences.getBoolean("notification_ring", true);
-
-		// store the conversion of minute to seconds
-		TIME_IN_MN = _pomodoroDuration;
-
-
-
-
-		Log.i("_pomodoroAmount : ", "" + _pomodoroAmount);
-		Log.i("_pomodoroDuration : ", "" + _pomodoroDuration);
-		Log.i("_shortBreakDuration : ", "" + _shortBreakDuration);
-		Log.i("_longBreakDuration : ", "" + _longBreakDuration);
-		Log.i("_isVibrate : ", "" + _isVibrate);
-		Log.i("_isSound : ", "" + _isSound);
-		Log.i("TIME_IN_MN : ", "" + TIME_IN_MN);
 	}
 
+	// turn the screen brightness up
+	private void _lightScreenUp(){
+		WindowManager.LayoutParams layout = getWindow().getAttributes();
+		layout.screenBrightness = 0.8f;
+		getWindow().setAttributes(layout);
+	}
+
+	// dim the screen brightness down
+	private void _lightScreenDown(){
+		WindowManager.LayoutParams layout = getWindow().getAttributes();
+		layout.screenBrightness = 0.1f;
+		getWindow().setAttributes(layout);
+	}
 
 
 // Runnable used to notify that the time is up
@@ -363,7 +478,6 @@ public class MainActivity extends AppCompatActivity {
 			if (_isVibrate){
 
 				// VIBRATE
-				// get the vibrator
 				Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 				mVibrator.vibrate(NOTIFICATION_TIME);
 			}
@@ -386,18 +500,18 @@ public class MainActivity extends AppCompatActivity {
 				player.reset();
 				player.release();
 			}
-
 		}
 	}
+
 
 	// the runnable used by the timer
 	private class Chrono implements Runnable {
 
-		// store the seconds
-		int seconds = (int)TIME_IN_SEC;
+		// store the _seconds
+		private int _seconds = (int)TIME_IN_SEC;
 
 		// the message needed for the inter thread communication
-		Message message;
+		private Message _message;
 
 		@Override
 		public void run() {
@@ -405,31 +519,31 @@ public class MainActivity extends AppCompatActivity {
 			// while the thread is running
 			while(IS_RUNNING && !_thread.isInterrupted()){
 
-				// decrement the seconds by 1
-				seconds -= 1;
+				// decrement the _seconds by 1
+				_seconds -= 1;
 
 				// get a new message from the pool
-				message = Message.obtain();
+				_message = Message.obtain();
 
 				// debug only
-//				Log.w("seconds : ", ""+ seconds);
+//				Log.w("_seconds : ", ""+ _seconds);
 
 				try {
-					Thread.sleep(1000); // sleep for 1 seconds
+					Thread.sleep(1000); // sleep for 1 _seconds
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 
-				if (seconds > 0){
+				if (_seconds > 0){
 					// send the last value
-					message.arg1 = seconds;
+					_message.arg1 = _seconds;
 				}else{
 					// sends -1 ( means error or end)
-					message.arg1 = -1;
+					_message.arg1 = -1;
 				}
 
 				//send the message
-				_handler.sendMessage(message);
+				_handler.sendMessage(_message);
 			}
 
 			// stop the thread
@@ -438,12 +552,11 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 
-
 	// the handler (handles communication between threads)
 	private static class mHandler extends Handler {
 
-		String valueToDisplay;
-		float progress;
+		private String _valueToDisplay;
+		private float _progress;
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -461,12 +574,12 @@ public class MainActivity extends AppCompatActivity {
 			}else{
 
 				// calculate the progress and store it as a float (1f = 100%)
-				progress = msg.arg1 / TIME_IN_SEC;
+				_progress = msg.arg1 / TIME_IN_SEC;
 
 				// change the progress of the liquidButton
-				LIQUID_BUTTON.get().changeProgress(1 - progress);
+				LIQUID_BUTTON.get().changeProgress(1 - _progress);
 
-				// if the seconds count is > 60
+				// if the _seconds count is > 60
 				if (msg.arg1 > 60){
 
 					// calculate if there is a minute change
@@ -477,16 +590,16 @@ public class MainActivity extends AppCompatActivity {
 					}
 
 					// store the value
-					valueToDisplay = TIME_IN_MN + " mn";
+					_valueToDisplay = TIME_IN_MN + " mn";
 				}else{
-					// if the seconds count is < 60, store the time in seconds
-					valueToDisplay = msg.arg1 + " s";
+					// if the _seconds count is < 60, store the time in _seconds
+					_valueToDisplay = msg.arg1 + " s";
 				}
 
 				// if the timer is still running (not interrupted)
 				if (IS_RUNNING){
 					// set the main TextView with the value
-					TEXT_TIME.get().setText(valueToDisplay);
+					TEXT_TIME.get().setText(_valueToDisplay);
 				}else{
 					// otherwise, hide the TextView
 					TEXT_TIME.get().setVisibility(View.INVISIBLE);

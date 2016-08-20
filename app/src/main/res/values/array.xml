@@ -17,7 +17,6 @@
 	</string-array>
 
 	<string-array name="pomodoroDurationArray">
-		<item name="1">1 mn</item>
 		<item name="15">15 mn</item>
 		<item name="20">20 mn</item>
 		<item name="25">25 mn</item>
@@ -26,7 +25,6 @@
 	</string-array>
 
 	<string-array name="pomodoroDurationValues">
-		<item name="1">1</item>
 		<item name="15">15</item>
 		<item name="20">20</item>
 		<item name="25">25</item>
@@ -35,7 +33,6 @@
 	</string-array>
 
 	<string-array name="shortBreakArray">
-		<item name="1">1 mn</item>
 		<item name="2">2 mn</item>
 		<item name="5">5 mn</item>
 		<item name="7">7 mn</item>
@@ -43,7 +40,6 @@
 	</string-array>
 
 	<string-array name="shortBreakValues">
-		<item name="1">1</item>
 		<item name="2">2</item>
 		<item name="5">5</item>
 		<item name="7">7</item>
@@ -51,7 +47,6 @@
 	</string-array>
 
 	<string-array name="longBreakArray">
-		<item name="1">1 mn</item>
 		<item name="15">15 mn</item>
 		<item name="20">20 mn</item>
 		<item name="25">25 mn</item>
@@ -59,7 +54,6 @@
 	</string-array>
 
 	<string-array name="longBreakValues">
-		<item name="1">1</item>
 		<item name="15">15</item>
 		<item name="20">20</item>
 		<item name="25">25</item>

@@ -27,15 +27,16 @@
 
 	<TextView
 		android:id="@+id/press_start"
-		android:text="@string/press_start"
+		android:text="@string/text_press_start"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 
-		android:layout_marginBottom="16dp"
+		android:gravity="center"
 		android:layout_marginStart="@dimen/overscan_horizontal"
+		android:layout_marginBottom="16dp"
 
-		app:layout_constraintLeft_toLeftOf="parent"
 		app:layout_constraintBottom_toTopOf="@+id/start_button"
+		app:layout_constraintLeft_toLeftOf="parent"
 		/>
 
 	<android.support.design.widget.FloatingActionButton
@@ -49,17 +50,16 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 
-		android:layout_marginStart="8dp"
-		android:layout_marginLeft="8dp"
 		android:layout_marginBottom="16dp"
 
-		app:layout_constraintLeft_toLeftOf="@+id/press_start"
 		app:layout_constraintBottom_toTopOf="@+id/setting_button"
+		app:layout_constraintLeft_toLeftOf="@+id/press_start"
+		app:layout_constraintRight_toRightOf="@+id/press_start"
 		/>
 
 	<android.support.design.widget.FloatingActionButton
 		android:id="@+id/setting_button"
-		app:srcCompat="@android:drawable/ic_menu_manage"
+		app:srcCompat="@android:drawable/ic_menu_preferences"
 		app:fabSize="mini"
 		android:clickable="true"
 
@@ -69,7 +69,6 @@
 		android:layout_height="wrap_content"
 
 		android:layout_marginStart="8dp"
-		android:layout_marginLeft="8dp"
 		android:layout_marginBottom="@dimen/overscan_vertical"
 
 		app:layout_constraintLeft_toLeftOf="@+id/start_button"
@@ -93,6 +92,19 @@
 	<TextView
 		android:id="@+id/text_secondary"
 		android:text="@string/text_get_to_work"
+		android:textSize="@dimen/secondary_text_size"
+
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginBottom="@dimen/overscan_vertical"
+
+		app:layout_constraintRight_toRightOf="@+id/liquid_time"
+		app:layout_constraintLeft_toLeftOf="@+id/liquid_time"
+		app:layout_constraintBottom_toBottomOf="parent"
+		/>
+
+	<TextView
+		android:id="@+id/text_third"
 		android:textSize="@dimen/secondary_text_size"
 
 		android:layout_width="wrap_content"
