@@ -4,7 +4,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -26,13 +25,14 @@ import java.lang.ref.WeakReference;
 
 public class MainActivity extends AppCompatActivity {
 
+	// the notification time
+	private static final int NOTIFICATION_TIME = 2300; // in ms
+
+
 	// this fields need to be static to be usable by the handler
 	//
 	private static WeakReference<LiquidButton> LIQUID_BUTTON;
-	private static WeakReference<TextView> TEXT_TIME;
-
-	// the notification time
-	private static final int NOTIFICATION_TIME = 2500; // in ms
+	private static WeakReference<TextView> TIMER_TEXTVIEW;
 
 	// variable to hold the time in minutes
 	private static int TIME_IN_MN;
@@ -45,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 	// the textViews
-	private TextView _pressStartTextView,
-			_textStartSession, _textInProgress;
+	private TextView _pressStartTextView, _descriptionTextView;
 
 	// From Settings
 	private int _pomodoroAmount, _pomodoroDuration,
@@ -71,8 +70,11 @@ public class MainActivity extends AppCompatActivity {
 	// the floating Action buttons
 	private FloatingActionButton _startButton, _settingButton;
 
+	// the thread ans the handler
 	private Thread _thread;
 	private Handler _handler;
+
+	// the snackBar used when the timer is canceled by the user
 	private Snackbar _snackBar;
 
 	@Override
@@ -81,23 +83,23 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 
 		// get the textView showing the time
-		TEXT_TIME = new WeakReference<>((TextView) findViewById(R.id.text_time));
+		TIMER_TEXTVIEW = new WeakReference<>((TextView) findViewById(R.id.text_timer));
 
 		// get the liquidButton
 		LIQUID_BUTTON = new WeakReference<>((LiquidButton) MainActivity.this.findViewById(R.id.liquid_time));
+
+		// say that the button stays filled up after the animation is complete
+		LIQUID_BUTTON.get().setFillAfter(true);
 
 
 		// get the default values from the settings
 		_getSettingsFromSharedPreferences();
 
 		// set the time with the value from settings
-		TEXT_TIME.get().setText(_pomodoroDuration + " mn");
+		TIMER_TEXTVIEW.get().setText(_pomodoroDuration + " mn");
 
-		// get the start session textView
-		_textStartSession = (TextView) findViewById(R.id.text_third);
-
-		// get the "in progress..." textView
-		_textInProgress = (TextView) findViewById(R.id.text_secondary);
+		// get the description textView
+		_descriptionTextView = (TextView) findViewById(R.id.text_description);
 
 		// find and set the "press start" textView
 		_pressStartTextView = (TextView) findViewById(R.id.press_start);
@@ -125,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
 
 				// start the settings activity
 				Intent intent = new Intent(MainActivity.this, MyPreferenceActivity.class);
-				intent.putExtra("orientation", getRequestedOrientation());
 				startActivityForResult(intent, 1);
 			}
 		});
@@ -141,9 +142,6 @@ public class MainActivity extends AppCompatActivity {
 
 					// say that is running
 					IS_RUNNING = true;
-
-					// lock screen orientation on 1st run
-					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
 					// initialize the TIME_IN_MN,
 					// the Buttons, the screen backlighting and the TextViews
@@ -198,9 +196,9 @@ public class MainActivity extends AppCompatActivity {
 					_snackBar.dismiss();
 				}
 
-				// show the "press start" and the "in progress..." textViews
+				// show the "press start" and the description textViews
 				_pressStartTextView.setVisibility(View.VISIBLE);
-				_textStartSession.setVisibility(View.VISIBLE);
+				_descriptionTextView.setVisibility(View.VISIBLE);
 
 				// show the buttons
 				_startButton.setVisibility(View.VISIBLE);
@@ -239,11 +237,8 @@ public class MainActivity extends AppCompatActivity {
 						}
 					}
 
-					// set the "start..." message
-					_textStartSession.setText(textToDisplay);
-
-					// hide the "in progress..." textView
-					_textInProgress.setVisibility(View.INVISIBLE);
+					// set the description message
+					_descriptionTextView.setText(textToDisplay);
 
 					// if the timer hasn't been canceled by the user
 					if (!_isCanceledByUser){
@@ -305,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
 					break;
 			}
 
-			TEXT_TIME.get().setText(TIME_IN_MN+ " mn");
+			TIMER_TEXTVIEW.get().setText(TIME_IN_MN+ " mn");
 		}
 	}
 
@@ -323,9 +318,9 @@ public class MainActivity extends AppCompatActivity {
 			// change the state to Pomodoro
 			_currentState = 0;
 
-			// set the variable and set the 2nd text textView
+			// set the variable and set the description textView
 			TIME_IN_MN = _pomodoroDuration;
-			_textInProgress.setText(R.string.text_pomodoro_in_progress);
+			_descriptionTextView.setText(R.string.text_pomodoro_in_progress);
 
 		// if current state is a Pomodoro
 		}else{
@@ -339,9 +334,9 @@ public class MainActivity extends AppCompatActivity {
 				// change the state to long break
 				_currentState = -2;
 
-				// set the variable and set the 2nd text textView
+				// set the variable and set the description textView
 				TIME_IN_MN = _longBreakDuration;
-				_textInProgress.setText(R.string.text_long_break_in_progress);
+				_descriptionTextView.setText(R.string.text_long_break_in_progress);
 
 			// if the counter != settings amount
 			}else{
@@ -352,9 +347,9 @@ public class MainActivity extends AppCompatActivity {
 				// change the state to a quick break
 				_currentState = -1;
 
-				// set the variable and set the 2nd text textView
+				// set the variable and set the description textView
 				TIME_IN_MN = _shortBreakDuration;
-				_textInProgress.setText(R.string.text_short_break_in_progress);
+				_descriptionTextView.setText(R.string.text_short_break_in_progress);
 			}
 		}
 
@@ -377,16 +372,13 @@ public class MainActivity extends AppCompatActivity {
 		_pressStartTextView.setVisibility(View.INVISIBLE);
 
 		// show the main TextView
-		TEXT_TIME.get().setVisibility(View.VISIBLE);
+		TIMER_TEXTVIEW.get().setVisibility(View.VISIBLE);
 
-		// show the second text
-		_textInProgress.setVisibility(View.VISIBLE);
+		// show the description textView
+		_descriptionTextView.setVisibility(View.VISIBLE);
 
 		// set the main textView
-		TEXT_TIME.get().setText(TIME_IN_MN + " mn");
-
-		// hide the 3rd text
-		_textStartSession.setVisibility(View.INVISIBLE);
+		TIMER_TEXTVIEW.get().setText(TIME_IN_MN + " mn");
 	}
 
 	private void _initButtons(){
@@ -400,8 +392,6 @@ public class MainActivity extends AppCompatActivity {
 
 		// setup the liquid button
 		//
-		// say that the button stays filled up after the animation is complete
-		LIQUID_BUTTON.get().setFillAfter(true);
 		// start the pouring animation
 		LIQUID_BUTTON.get().startPour();
 	}
@@ -409,10 +399,7 @@ public class MainActivity extends AppCompatActivity {
 	private void _hideButtonsAndTextViews() {
 
 		// hide the main TextView
-		TEXT_TIME.get().setVisibility(View.INVISIBLE);
-
-		// hide the "in progress..." TextView
-		_textInProgress.setVisibility(View.INVISIBLE);
+		TIMER_TEXTVIEW.get().setVisibility(View.INVISIBLE);
 
 		// hide the buttons
 		_startButton.setVisibility(View.INVISIBLE);
@@ -470,7 +457,8 @@ public class MainActivity extends AppCompatActivity {
 							.setSmallIcon(R.drawable.ic_stat_image_timelapse)
 							.setContentTitle(getResources().getString(R.string.app_name))
 							.setContentText(_textToUse)
-							.setContentIntent(pendingIntent);
+							.setContentIntent(pendingIntent)
+							.setAutoCancel(true);
 
 			NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 			manager.notify(1, notification.build());
@@ -566,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
 			if (msg.arg1 == -1){
 
 				// hide the TextView
-				TEXT_TIME.get().setVisibility(View.INVISIBLE);
+				TIMER_TEXTVIEW.get().setVisibility(View.INVISIBLE);
 
 				// start the "finishPour" animation
 				LIQUID_BUTTON.get().finishPour();
@@ -599,10 +587,10 @@ public class MainActivity extends AppCompatActivity {
 				// if the timer is still running (not interrupted)
 				if (IS_RUNNING){
 					// set the main TextView with the value
-					TEXT_TIME.get().setText(_valueToDisplay);
+					TIMER_TEXTVIEW.get().setText(_valueToDisplay);
 				}else{
 					// otherwise, hide the TextView
-					TEXT_TIME.get().setVisibility(View.INVISIBLE);
+					TIMER_TEXTVIEW.get().setVisibility(View.INVISIBLE);
 				}
 			}
 		}

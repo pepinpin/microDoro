@@ -19,7 +19,7 @@
 	<!--SETTINGS-->
 	<string name="pref_category_pomodoro">Pomodoro</string>
 	<string name="pref_pomodoro_amount_title">Pomodoro amount</string>
-	<string name="pref_pomodoro_amount_summary">How many Pomodoros before a long break</string>
+	<string name="pref_pomodoro_amount_summary">How many Pomodori before a long break</string>
 	<string name="pref_pomodoro_duration_title">Pomodoro duration</string>
 	<string name="pref_pomodoro_duration_summary">How long is a Pomodoro session</string>
 
