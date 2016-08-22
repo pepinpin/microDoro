@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
 	// the wakelock, to keep the app running even if
 	// the device goes to sleep mode
-	private PowerManager.WakeLock wl;
+	private PowerManager.WakeLock _wl;
 
 	// the textViews
 	private TextView _pressStartTextView, _descriptionTextView;
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "The WakeLock");
+		_wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "The WakeLock");
 
 		// get the textView showing the time
 		TIMER_TEXTVIEW = new WeakReference<>((TextView) findViewById(R.id.text_timer));
@@ -340,8 +340,8 @@ public class MainActivity extends AppCompatActivity {
 		super.onDestroy();
 
 		// release the wakelock
-		if (wl != null && wl.isHeld()){
-			wl.release();
+		if (_wl != null && _wl.isHeld()){
+			_wl.release();
 		}
 
 		// interrupt the thread
@@ -581,7 +581,7 @@ public class MainActivity extends AppCompatActivity {
 		@Override
 		public void run() {
 
-			wl.acquire();
+			_wl.acquire();
 
 			// while the thread is running
 			while(IS_RUNNING && !_thread.isInterrupted()){
@@ -617,7 +617,7 @@ public class MainActivity extends AppCompatActivity {
 			_thread.interrupt();
 
 			// release the wakelock
-			wl.release();
+			_wl.release();
 		}
 	}
 
