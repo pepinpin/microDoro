@@ -3,6 +3,8 @@
 		  package="net.biospherecorp.microdoro">
 
 	<uses-permission android:name="android.permission.VIBRATE"/>
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+
 	<supports-screens
 		android:smallScreens="true"
 		android:normalScreens="true"
@@ -19,6 +21,7 @@
 		<activity android:name=".MainActivity"
 				  android:launchMode="singleTop"
 				  android:screenOrientation="landscape"
+				  android:configChanges="orientation|screenSize"
 			>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>

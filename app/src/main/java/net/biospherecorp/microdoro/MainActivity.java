@@ -2,6 +2,7 @@ package net.biospherecorp.microdoro;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -9,6 +10,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -28,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
 	// the notification time
 	private static final int NOTIFICATION_TIME = 2300; // in ms
 
-
 	// this fields need to be static to be usable by the handler
 	//
 	private static WeakReference<LiquidButton> LIQUID_BUTTON;
@@ -43,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
 	// is the timer actually running ?
 	private static boolean IS_RUNNING = false;
 
+
+	// the wakelock, to keep the app running even if
+	// the device goes to sleep mode
+	private PowerManager.WakeLock wl;
 
 	// the textViews
 	private TextView _pressStartTextView, _descriptionTextView;
@@ -80,7 +85,11 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		setContentView(R.layout.activity_main);
+
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "The WakeLock");
 
 		// get the textView showing the time
 		TIMER_TEXTVIEW = new WeakReference<>((TextView) findViewById(R.id.text_timer));
@@ -266,7 +275,13 @@ public class MainActivity extends AppCompatActivity {
 		super.onPostResume();
 
 		// set the flag to avoid the device to go to sleep mode
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+
+		// set the flag to deal with the lockscreen
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+				| WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 	}
 
 	@Override
@@ -274,7 +289,69 @@ public class MainActivity extends AppCompatActivity {
 		super.onPause();
 
 		// clear the flag that avoids the device to go to sleep mode
-		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+
+		// clear the flag that deals with the lockscreen
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+				| WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+
+
+	// display a notification indicating the state of the app (... in progress...)
+		//
+		// if timer is running
+		if(IS_RUNNING){
+
+			Intent intent = new Intent(MainActivity.this, MainActivity.class);
+			PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+			String txtToUse;
+
+			// set the notification message
+			switch (_currentState){
+				case -1: // if it's a quick break
+					txtToUse = getString(R.string.text_short_break_in_progress);
+					break;
+				case -2: // if it's a long break
+					txtToUse = getString(R.string.text_long_break_in_progress);
+					break;
+				default: // if it's a pomodoro
+					txtToUse = getString(R.string.text_pomodoro_in_progress);
+					break;
+			}
+
+			// prepare and display the notification
+			NotificationCompat.Builder notification =
+					new NotificationCompat.Builder(MainActivity.this)
+							.setSmallIcon(R.drawable.ic_stat_image_timelapse)
+							.setContentTitle(getResources().getString(R.string.app_name))
+							.setContentText(txtToUse)
+							.setContentIntent(pendingIntent)
+							.setAutoCancel(true);
+
+			NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			manager.notify(1, notification.build());
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		// release the wakelock
+		if (wl != null && wl.isHeld()){
+			wl.release();
+		}
+
+		// interrupt the thread
+		if (_thread != null && !_thread.isInterrupted()){
+			_thread.interrupt();
+		}
+
+		// clear the notifications
+		NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		manager.cancelAll();
 	}
 
 	// return from the preferences activity
@@ -504,6 +581,8 @@ public class MainActivity extends AppCompatActivity {
 		@Override
 		public void run() {
 
+			wl.acquire();
+
 			// while the thread is running
 			while(IS_RUNNING && !_thread.isInterrupted()){
 
@@ -536,6 +615,9 @@ public class MainActivity extends AppCompatActivity {
 
 			// stop the thread
 			_thread.interrupt();
+
+			// release the wakelock
+			wl.release();
 		}
 	}
 
