@@ -38,8 +38,11 @@ Read more about it on wikipedia : https://en.wikipedia.org/wiki/Pomodoro_Techniq
 
 - When coming back from lock screen, a small graphical artefact can appear (no biggy, still works at 100%)
 
+<br/>
 
 NO ADS & OPEN SOURCE
+
+<br/>
 
 ---
 
