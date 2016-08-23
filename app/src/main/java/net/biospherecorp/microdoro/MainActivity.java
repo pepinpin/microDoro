@@ -478,6 +478,9 @@ public class MainActivity extends AppCompatActivity {
 		// hide the main TextView
 		TIMER_TEXTVIEW.get().setVisibility(View.INVISIBLE);
 
+		// hide the description TextView
+		_descriptionTextView.setVisibility(View.INVISIBLE);
+
 		// hide the buttons
 		_startButton.setVisibility(View.INVISIBLE);
 		_settingButton.setVisibility(View.INVISIBLE);
