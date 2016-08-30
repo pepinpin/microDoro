@@ -36,7 +36,7 @@ Read more about it on wikipedia : https://en.wikipedia.org/wiki/Pomodoro_Techniq
 
 ##Known bug :
 
-- When coming back from lock screen, a small graphical artefact can appear (no biggy, still works at 100%)
+- When coming back from lock screen, a small graphical artefact may appear (no biggy, still works at 100%)
 
 <br/>
 
